@@ -1,37 +1,37 @@
 {% for interface in host.facts.interfaces %}
-{% if interface.name is defined and interface.name|length <= 3 %}
+{%  if interface.name is defined and interface.name|length <= 3 %}
 interface Port-Channel{{ interface.name }}
-{% else %}
+{%  else %}
 interface {{ interface.name }}
-{% endif %}
-  {% if interface.enabled == false %}
+{%  endif %}
+{%  if interface.enabled == false %}
   shutdown
-  {% else %}
+{%  else %}
   no shutdown
-  {% endif %}
-  {% if interface.ip_addresses is defined  and interface.ip_addresses|length > 0 %}
+{% endif %}
+{%  if interface.ip_addresses is defined  and interface.ip_addresses|length > 0 %}
   no switchport
-    {% if interface.ip_addresses[0].vrf != none %}
+{%    if interface.ip_addresses[0].vrf != none %}
   vrf {{ interface.ip_addresses[0].vrf.name }}
-    {% endif %}
+{%    endif %}
   ip address {{ interface.ip_addresses[0].address }}
-  {% elif interface.untagged_vlan != none %}
+{%  elif interface.untagged_vlan != none %}
   switchport
   switchport access vlan {{ interface.untagged_vlan.vid }}
-  {% elif interface.tagged_vlans is defined and interface.tagged_vlans| length > 0 %}
+{%  elif interface.tagged_vlans is defined and interface.tagged_vlans| length > 0 %}
   switchport
   switchport mode trunk
-    {% for vlan in interface.tagged_vlan %}
+{%    for vlan in interface.tagged_vlan %}
   switchport trunk allowed vlan add {{ vlan.vid }}
-    {% endfor %}
-  {% else %}
+{%    endfor %}
+{%  else %}
   switchport
   switchport mode trunk
-  {% endif %}
-  {% if interface.description is defined and interface.description|length > 0 %}
+{%  endif %}
+{%  if interface.description is defined and interface.description|length > 0 %}
   description {{ interface.description }}
-  {% endif %}
-  {% if interface.lag != none %}
+{%  endif %}
+{%  if interface.lag != none %}
   channel-group {{ interface.lag.name }} mode active
-  {% endif %}
+{%  endif %}
 {% endfor %}
