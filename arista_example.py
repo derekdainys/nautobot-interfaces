@@ -35,26 +35,43 @@ def get_device_data(hostname):
         "Content-Type": "application/json",
     }
 
-    graphQLresponse = requests.get(
-        url=f"https://{nautobotServer}/api/extras/graphql-queries",
-        verify=False,
+    query = """
+    query ($device_name: [String]) {
+    devices (name: $device_name) {
+        interfaces {
+        name
+        enabled
+        lag {
+            name
+        }
+        description
+        tagged_vlans {
+            vid
+        }
+        untagged_vlan {
+            vid
+        }
+        ip_addresses {
+            vrf {
+            name
+            }
+            address
+        }
+        }
+    }
+    }
+    """
+    queryDict = {"query": query, "variables": {"device_name": hostname}}
+
+    graphQLquery = requests.post(
+        url=f"https://{nautobotServer}/api/graphql/",
+        json=queryDict,
         headers=nautobotHeaders,
+        verify=False,
     ).json()
 
-    for result in graphQLresponse["results"]:
-        queryUrl = result["url"]
-
-        queryVariables = {"variables": {"device_name": hostname}}
-
-        graphQLquery = requests.post(
-            url=f"{queryUrl}run/",
-            json=queryVariables,
-            headers=nautobotHeaders,
-            verify=False,
-        ).json()
-
-        data = graphQLquery["data"]["devices"][0]
-        return data
+    data = graphQLquery["data"]["devices"][0]
+    return data
 
 
 def generate_config(task):
