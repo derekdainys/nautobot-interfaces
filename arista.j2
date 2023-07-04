@@ -1,5 +1,5 @@
 {% for interface in host.facts.interfaces %}
-{% set ns = namespace(vlan_list = "")%}
+{% set ns = namespace(vlan_list = "") %}
 {%  if interface.name is defined and interface.name|length <= 3 %}
 interface Port-Channel{{ interface.name }}
 {%  else %}
