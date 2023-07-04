@@ -1,4 +1,5 @@
 {% for interface in host.facts.interfaces %}
+{% set ns = namespace(vlan_list = "")%}
 {%  if interface.name is defined and interface.name|length <= 3 %}
 interface Port-Channel{{ interface.name }}
 {%  else %}
@@ -10,7 +11,10 @@ interface {{ interface.name }}
   no shutdown
 {% endif %}
 {%  if interface.ip_addresses is defined  and interface.ip_addresses|length > 0 %}
+{%    if interface.name == "Management1"%}
+{%    else %}
   no switchport
+{%    endif%}
 {%    if interface.ip_addresses[0].vrf != none %}
   vrf {{ interface.ip_addresses[0].vrf.name }}
 {%    endif %}
@@ -18,12 +22,17 @@ interface {{ interface.name }}
 {%  elif interface.untagged_vlan != none %}
   switchport
   switchport access vlan {{ interface.untagged_vlan.vid }}
-{%  elif interface.tagged_vlans is defined and interface.tagged_vlans| length > 0 %}
+{%  elif interface.tagged_vlans| length > 0 %}
   switchport
   switchport mode trunk
-{%    for vlan in interface.tagged_vlan %}
-  switchport trunk allowed vlan add {{ vlan.vid }}
+{%    for vlan in interface.tagged_vlans %}
+{%      if interface.tagged_vlans[-1] == vlan %}
+{%      set ns.vlan_list = ns.vlan_list + vlan.vid|string %}
+{%      else %}
+{%      set ns.vlan_list = ns.vlan_list + vlan.vid|string + "," %}
+{%      endif %}
 {%    endfor %}
+  switchport trunk allowed vlan {{ ns.vlan_list }}
 {%  else %}
   switchport
   switchport mode trunk
@@ -34,4 +43,5 @@ interface {{ interface.name }}
 {%  if interface.lag != none %}
   channel-group {{ interface.lag.name }} mode active
 {%  endif %}
+!
 {% endfor %}
