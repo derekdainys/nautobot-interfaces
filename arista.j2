@@ -1,10 +1,6 @@
 {% for interface in host.facts.interfaces %}
 {% set ns = namespace(vlan_list = "") %}
-{%  if interface.name is defined and interface.name|length <= 3 %}
-interface Port-Channel{{ interface.name }}
-{%  else %}
 interface {{ interface.name }}
-{%  endif %}
 {%  if interface.enabled == false %}
   shutdown
 {%  else %}
@@ -41,7 +37,8 @@ interface {{ interface.name }}
   description {{ interface.description }}
 {%  endif %}
 {%  if interface.lag != none %}
-  channel-group {{ interface.lag.name }} mode active
+{%  set lag_split = interface.lag.name.split("l") %}
+  channel-group {{ lag_split[-1] }} mode active
 {%  endif %}
 !
 {% endfor %}
