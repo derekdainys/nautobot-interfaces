@@ -72,6 +72,7 @@ def generate_config(task):
         path="./",
         template=f"{manufacturer}.j2",
         jinja_env=jinjaEnvironment,
+        severity_level=logging.DEBUG,
     )
     return result.result
 
