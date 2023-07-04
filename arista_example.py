@@ -79,15 +79,13 @@ def generate_config(task):
         hostname=task.host.data["pynautobot_dictionary"]["name"]
     )
 
-    manufacturer = task.host.data["pynautobot_dictionary"]["device_type"][
-        "manufacturer"
-    ]["slug"]
+    platform = task.host.data["pynautobot_dictionary"]["platform"]["slug"]
 
     jinjaEnvironment = Environment(lstrip_blocks=True, trim_blocks=True)
     result = task.run(
         task=template_file,
         path="./",
-        template=f"{manufacturer}.j2",
+        template=f"{platform}.j2",
         jinja_env=jinjaEnvironment,
         severity_level=logging.DEBUG,
     )
